@@ -1,0 +1,114 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Chat container: adjusted width and height */
+.chat-container {
+    width: 600px; /* Wider layout */
+    height: 300px; /* Shorter layout */
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Chat box where messages will appear */
+.chat-box {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Smaller gap between messages */
+}
+
+/* Input container */
+.input-container {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background-color: #f0f0f0;
+    border-top: 1px solid #ddd;
+}
+
+/* User input */
+#user-input {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 20px;
+    background-color: #e9e9e9;
+    font-size: 13px; /* Smaller font size for input */
+}
+
+/* Send button */
+#send-btn {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    margin-left: 8px;
+}
+
+#send-btn img {
+    width: 30px; /* Adjusted send icon size */
+    height: 30px;
+}
+
+/* Message styles */
+.message {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px; /* Smaller gap between message and icon */
+}
+
+.message .icon {
+    width: 32px; /* Icon size */
+    height: 32px;
+    border-radius: 50%;
+    background-color: #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.message .icon img {
+    width: 26px;  /* Adjust the size of the icon image */
+    height: 29px; /* Adjust the size of the icon image */
+}
+
+/* User message */
+.user-message .icon {
+    background-color: #ffffff; /* User icon color */
+}
+
+.user-message .message-content {
+    background-color: #e9f7fe; /* User message background */
+    padding: 8px; /* Smaller padding */
+    border-radius: 10px;
+    max-width: 90%;
+    word-wrap: break-word;
+    font-size: 13px; /* Smaller font size for user messages */
+}
+
+/* LLM message */
+.llm-message .icon {
+    background-color: #ffffff; /* LLM icon color */
+}
+
+.llm-message .message-content {
+    background-color: #f1f8e9; /* LLM message background */
+    padding: 8px; /* Smaller padding */
+    border-radius: 10px;
+    max-width: 90%;
+    word-wrap: break-word;
+    font-size: 13px; /* Smaller font size for LLM messages */
+}
