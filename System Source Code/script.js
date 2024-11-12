@@ -26,16 +26,14 @@ let vectorStoreId;
 let threadId;
 let runId;
 let callId;
-let fileIds = [];
 let txFiles = [];
-let eFiles = [];
-let eFileIds = [];
 let i;
 let t = 1;
 let r;
 let blockNo = "0";
 let blockNo2 = "0";
 let n = 0;
+let f = 0;
 
 
 // JavaScript code to handle message input and displaying
@@ -115,13 +113,26 @@ async function handleClaimEvent(claimId) {
   if(res[0] == "1") {
     const response = await claimsSC.flagClaimRequest(claimId);
     console.log("LLM response: Claim has a high potential of being fraudulent.")
-    console.log("Claim flagged successfully. Transaction hash: ", response.hash);
-    await getSCTransactions(claimsSC, claimsSCAddr, blockNo);
-    blockNo = blockNo2;
+    console.log("Claim flagged successfully.");
+    let date = new Date();
+    // Create new event for the flagged claim
+    const flagEvent = {
+      "event": {
+        "eventName": "ClaimRequestFlagged",
+        "logs": {
+          "claimId": claimId,
+          "timestamp": date.toLocaleString()
+        }
+      }
+    };
+    // Upload flag event to the RAG vector database
+    const blob = new Blob([JSON.stringify(flagEvent, null, 2)], { type: 'application/json' });
+    const fileName = `flaggedEvent#${++f}.json`; 
+    const id = await uploadFileToOpenAI(blob, fileName);
+    await addFileToVectorStore(id);
   } else {
     console.log("LLM response: Claim shows no signs of being fraudulent.")
   }
-
 }
 
 // Function to retrieve all patient transactions/events from the blockchain
@@ -267,7 +278,6 @@ async function createTransactionsFile(transactions) {
   console.log(`All transactions saved as ${fileName}`);
 
   const id = await uploadFileToOpenAI(blob, fileName);
-  fileIds.push(id);
   await addFileToVectorStore(id);
 
   txFiles = [];
@@ -336,17 +346,7 @@ async function getLLMResponse() {
     console.log(message);
     
       if (run.status == "requires_action" && run.required_action.type == "submit_tool_outputs") {
-          if (run.required_action.submit_tool_outputs.tool_calls[0].function.name == "getFlaggedClaims") {
-              callId = run.required_action.submit_tool_outputs.tool_calls[0].id;
-              console.log("callId: ", callId);
-              const output = await getFlaggedClaims();
-              await submitToolOutputs(output, run.thread_id, run.id, callId);
-          } else if (run.required_action.submit_tool_outputs.tool_calls[0].function.name == "getPendingClaims") {
-              callId = run.required_action.submit_tool_outputs.tool_calls[0].id;
-              console.log("callId: ", callId);
-              const output = await getPendingClaims();
-              await submitToolOutputs(output, run.thread_id, run.id, callId);
-          } else if (run.required_action.submit_tool_outputs.tool_calls[0].function.name == "approveClaim") {
+          if (run.required_action.submit_tool_outputs.tool_calls[0].function.name == "approveClaim") {
             callId = run.required_action.submit_tool_outputs.tool_calls[0].id;
             console.log("callId: ", callId);
             const arg = JSON.parse(run.required_action.submit_tool_outputs.tool_calls[0].function.arguments);
@@ -378,22 +378,6 @@ async function getLLMResponse() {
 }
 
 // Functions to call SC functions
-
-async function getFlaggedClaims() {
-  const response = await claimsSC.getFlaggedClaims();
-  const result = Array.from(response);
-  const output = result.join(", ");
-  console.log("Flagged claims: ", output);
-  return output;
-}
-
-async function getPendingClaims() {
-  const response = await claimsSC.getPendingClaims();
-  const result = Array.from(response);
-  const output = result.join(", ");
-  console.log("Pending claims: ", output);
-  return output;
-}
 
 async function getClaimStatus(id) {
   const response = await claimsSC.getClaimStatus(id);
