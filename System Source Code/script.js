@@ -111,27 +111,51 @@ async function handleClaimEvent(claimId) {
   await createThread();
 
   if(res[0] == "1") {
-    const response = await claimsSC.flagClaimRequest(claimId);
-    console.log("LLM response: Claim has a high potential of being fraudulent.")
-    console.log("Claim flagged successfully.");
-    let date = new Date();
-    // Create new event for the flagged claim
-    const flagEvent = {
-      "event": {
-        "eventName": "ClaimRequestFlagged",
-        "logs": {
-          "claimId": claimId,
-          "timestamp": date.toLocaleString()
-        }
-      }
-    };
-    // Upload flag event to the RAG vector database
-    const blob = new Blob([JSON.stringify(flagEvent, null, 2)], { type: 'application/json' });
-    const fileName = `flaggedEvent#${++f}.json`; 
-    const id = await uploadFileToOpenAI(blob, fileName);
-    await addFileToVectorStore(id);
+    console.log(`Claim #${claimId} has a high potential of being fraudulent.`);
+    await handleFlaggedClaim(claimId);
   } else {
-    console.log("LLM response: Claim shows no signs of being fraudulent.")
+    console.log(`Claim #${claimId} shows no signs of being fraudulent.`);
+  }
+}
+
+async function handleFlaggedClaim(claim) {
+  let date = new Date();
+  
+  // Create new event for the flagged claim
+  const flagEvent = {
+    "event": {
+      "eventName": "ClaimRequestFlagged",
+      "logs": {
+        "claimId": claim,
+        "timestamp": date.toLocaleString()
+      }
+    }
+  };
+  console.log("Claim flagged successfully.");
+  
+  // Upload flag event to the RAG vector database
+  const blob = new Blob([JSON.stringify(flagEvent, null, 2)], { type: 'application/json' });
+  const fileName = `flaggedEvent#${++f}.json`; 
+  const id = await uploadFileToOpenAI(blob, fileName);
+  await addFileToVectorStore(id);
+
+  // Push notification on the UI
+  if (Notification.permission === "granted") {
+    new Notification("Suspicious Activity Detected!", {
+      body: `Claim #${claim} is flagged by the LLM for potential fraud. Please review the claim details for further investigation.`,
+      icon: "flagIcon.png"
+    });
+  } else {
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        new Notification("Suspicious Activity Detected!", {
+          body: `Claim #${claim} is flagged by the LLM for potential fraud. Please review the claim details for further investigation.`,
+          icon: "flagIcon.png"
+        });
+      } else {
+          console.log("Permission denied for notifications.");
+      }
+  });
   }
 }
 
