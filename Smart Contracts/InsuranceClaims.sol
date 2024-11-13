@@ -42,12 +42,7 @@ contract InsuranceClaims {
         _;
     }
 
-    modifier onlyInsuranceLLM(uint256 id) {
-        require((claimRequests[id].insurance == msg.sender || claimRequests[id].insurance == regSC.getLLMInsurance(msg.sender)), "Only authorized insurance companies can call this function");
-        _;
-    }
-
-    enum ClaimStatus {Pending, Approved, Flagged, Rejected, Paid}
+    enum ClaimStatus {Pending, Approved, Rejected, Paid}
 
     struct Service {
         uint256 code;
@@ -162,13 +157,8 @@ contract InsuranceClaims {
         emit ClaimRequestApproved(claimID);
     }
 
-    function flagClaimRequest(uint256 claimID) public onlyInsuranceLLM(claimID) {
-        claimRequests[claimID].status = ClaimStatus.Flagged;
-        emit ClaimRequestFlagged(claimID);
-    }
-
     function rejectClaimRequest(uint256 claimID) public onlyRegInsuranceCompanies(claimID) {
-        claimRequests[claimID].status = ClaimStatus.Flagged;
+        claimRequests[claimID].status = ClaimStatus.Rejected;
         emit ClaimRequestRejected(claimID);
     }
 
@@ -211,24 +201,6 @@ contract InsuranceClaims {
             }
         }
         return pendingClaimIds;
-    }
-
-    function getFlaggedClaims() public view returns (uint256[] memory) {
-        uint256 count = 0;
-        for (uint256 i = 0; i < claimId; i++) {
-            if (claimRequests[i].status == ClaimStatus.Flagged) {
-                count++;
-            }
-        }
-        uint256[] memory flaggedClaimIds = new uint256[](count);
-        uint256 index = 0;
-        for (uint256 i = 0; i < claimId; i++) {
-            if (claimRequests[i].status == ClaimStatus.Flagged) {
-                flaggedClaimIds[index] = i;
-                index++;
-            }
-        }
-        return flaggedClaimIds;
     }
 
     function getClaimStatus(uint256 id) public view returns (ClaimStatus) {
