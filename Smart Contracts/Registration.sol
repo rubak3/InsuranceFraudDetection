@@ -30,24 +30,17 @@ contract Registration {
         uint256 mrn;
     }
 
-    struct LLM {
-        bool registered;
-        address insuranceCompany;
-    }
-
     mapping (address=>Patient) public regPatients;
     mapping (address=>Clinician) public regClinicians;
     mapping (address=>bool) public regPharmacies;
     mapping (address=>bool) public regHospitals;
     mapping (address=>bool) public regInsuranceCompanies;
-    mapping (address=>LLM) public regLLMs;
 
     event PatientRegistered(address patientAddress, address insuranceCompanyAddress, uint256 MRN, string gender, string birthDate);
     event ClinicianRegistered(address clinicianAddress, address hospitalAddress);
     event PharmacyRegistered(address pharmacyAddress);
     event HospitalRegistered(address hospitalAddress);
     event InsuranceCompanyRegistered(address insuranceCompanyAddress);
-    event LLMRegistered(address llmAddress, address insuranceCompanyAddress);
 
 
     function registerPatient(address patientAddress, address insuranceCompany, uint256 mrn, string memory gender, string memory birthDate) public onlyOwner{
@@ -85,13 +78,6 @@ contract Registration {
         emit InsuranceCompanyRegistered(insuranceCompanyAddress);
     }
 
-    function registerLLM(address llmAddress) public onlyRegInsuranceCompanies{
-        require(!regLLMs[llmAddress].registered, "LLM is already registered");
-        regLLMs[llmAddress].registered = true;
-        regLLMs[llmAddress].insuranceCompany = msg.sender;
-        emit LLMRegistered(llmAddress, msg.sender);
-    }
-
     function isPatientRegistered(address patientAddress) public view returns (bool) {
         return regPatients[patientAddress].registered;
     }
@@ -106,14 +92,6 @@ contract Registration {
 
     function getPatientInsurance(address patientAddress) public view returns (address) {
         return regPatients[patientAddress].insuranceCompany;
-    }
-
-    function isLLMRegistered(address llmAddress) public view returns (bool) {
-        return regLLMs[llmAddress].registered;
-    }
-
-    function getLLMInsurance(address llmAddress) public view returns (address) {
-        return regLLMs[llmAddress].insuranceCompany;
     }
 
 }
