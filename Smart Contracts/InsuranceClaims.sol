@@ -78,7 +78,6 @@ contract InsuranceClaims {
     event PrescriptionDispensed(uint256 prescriptionId);
     event ClaimRequestSubmitted(uint256 claimId, address insuranceCompanyAddress);
     event ClaimRequestApproved(uint256 claimId);
-    event ClaimRequestFlagged(uint256 claimId);
     event ClaimRequestPaid(uint256 claimId);
     event ClaimRequestRejected(uint256 claimId);
     event PatientPaidForService(address patientAddress, uint256 serviceId, uint256 paidAmount);
